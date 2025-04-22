@@ -173,8 +173,8 @@ def solve_function():
         custom_table.clear_table()
         func_type = combo_method.get()
         min_max = combo_minmax.get()
-        a = float(left_lim_entry.get())
-        b = float(right_lim_entry.get())
+        a_initial = float(left_lim_entry.get())
+        b_initial = float(right_lim_entry.get())
         l = float(minimal_interval_entry.get())
         f = function_entry.get()
         
@@ -187,11 +187,11 @@ def solve_function():
 
     table_header['text'] = f"Optimization result by method: {func_type} ({min_max})"
 
-    def result_callback(opt_x, opt_f, a, b, func_eval):
+    def result_callback(opt_x, opt_f, a_final, b_final, func_eval):
         opt_x_label['text'] = f"Optimal x: {round(opt_x, 4)}"
         opt_f_label['text'] = f"Optimal F(x): {round(opt_f, 4)}"
         func_eval_label['text'] = f"Function evaluation count: {func_eval}"
-        plot_graph(a, b, a, b, opt_x, opt_f, f, func_type, min_max)
+        plot_graph(a_initial, b_initial, a_final, b_final, opt_x, opt_f, f, func_type, min_max)
 
     e = None
     if combo_method.get() != "Golden ratio method": 
@@ -202,11 +202,11 @@ def solve_function():
             return
 
     if func_type == "Dyhotomy method":
-        optimizer.dyhotomy(a, b, e, l, min_max, f, update_table, result_callback)
+        optimizer.dyhotomy(a_initial, b_initial, e, l, min_max, f, update_table, result_callback)
     elif func_type == "Golden ratio method":
-        optimizer.golden_ratio(a, b, l, min_max, f, update_table, result_callback)
+        optimizer.golden_ratio(a_initial, b_initial, l, min_max, f, update_table, result_callback)
     elif func_type == "Fibonacci method":
-        optimizer.fibonacci_search(f, a, b, l, e, min_max, update_table, result_callback)
+        optimizer.fibonacci_search(f, a_initial, b_initial, l, e, min_max, update_table, result_callback)
 
 update_visibility()
 solve.config(command=solve_function)

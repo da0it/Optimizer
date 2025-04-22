@@ -14,7 +14,7 @@ def dyhotomy(a, b, e, l, type, f, update_table_callback, result_callback):
 
     formula_expr = sp.sympify(f)
 
-    function = sp.lambdify(x, formula_expr)
+    function = sp.lambdify( x, formula_expr)
 	
     func = FunctionCounter(function)
 
@@ -29,10 +29,12 @@ def dyhotomy(a, b, e, l, type, f, update_table_callback, result_callback):
     assert l > 0 , 'Конечная длина интервала неопределенности не может быть меньше нуля'
 
     # Инициализация начального этапа
-    k = 1
+    k = -1
 
     # Пока длина между двумя точками превышает конечную длину интервала неопределенности
     while (b - a > l):
+
+        k += 1
 
         # Вычисление значений точек lambda и mu
         lamb = (a + b)/ 2 - e
@@ -40,6 +42,8 @@ def dyhotomy(a, b, e, l, type, f, update_table_callback, result_callback):
 
         f_lamb = func(lamb)
         f_mu = func(mu)
+
+        update_table_callback(k, round(a, 4), round(b, 4), round(lamb, 4), round(mu, 4), round(f_lamb, 4), round(f_mu, 4))
 
         # Выполнение алгоритма 
         if (type == "min"):
@@ -53,8 +57,7 @@ def dyhotomy(a, b, e, l, type, f, update_table_callback, result_callback):
             else:
                 a = lamb
 
-        update_table_callback(k, round(a, 4), round(b, 4), round(lamb, 4), round(mu, 4), round(f_lamb, 4), round(f_mu, 4))
-        k += 1
+    update_table_callback(k + 1, round(a, 4), round(b, 4), round(lamb, 4), round(mu, 4), round(f_lamb, 4), round(f_mu, 4))
 
     # Вычисление оптимального значения x и значения функции от этого x
     opt_x = (a + b) / 2
@@ -65,84 +68,57 @@ def dyhotomy(a, b, e, l, type, f, update_table_callback, result_callback):
 
 
 def golden_ratio(a, b, l, type, f, update_table_callback, result_callback):
-
     x = sp.symbols('x')
-
     formula_expr = sp.sympify(f)
-
     function = sp.lambdify(x, formula_expr)
-
     func = FunctionCounter(function)
 
-    a_initial = a 
-    b_initial = b
-
-    func_eval = 0
-
-    # Константа α 
     alph = 0.618
-
-    # Вычисление начальных значений λ и μ
+    k = -1
+    
+    # Инициализация
     lamb = a + (1 - alph) * (b - a)
-    mu = a + alph* (b - a)
-
-    # Вычисление функции для начальных значений λ и μ
+    mu = a + alph * (b - a)
     f_lamb = func(lamb)
     f_mu = func(mu)
 
-    # Выполнение алгоритма 
-    if (type == "min"):
-        k = 1
+    while (b - a > l):
+        k += 1
+        # Выводим текущее состояние ДО изменения интервала
+        update_table_callback(k, round(a, 4), round(b, 4), round(lamb, 4), round(mu, 4), round(f_lamb, 4), round(f_mu, 4))
 
-        # Пока длина между точками больше длины конечного интервала неопределенности, выполнение цикла
-        while (b - a > l):
-            # Если f(λ) > f(μ) то шаг 2
+        if (type == "min"):
             if (f_lamb > f_mu):
                 a = lamb
-                b = b
                 lamb = mu
-                mu = a + alph * (b - a)
-
                 f_lamb = f_mu
+                mu = a + alph * (b - a)
                 f_mu = func(mu)
-
-            # Если f(λ) <= f(μ) то шаг 3
-            elif (f_lamb <= f_mu):
-                a = a
+            else:
                 b = mu
                 mu = lamb
-                lamb = a + (1 - alph) * (b - a)
-
                 f_mu = f_lamb
+                lamb = a + (1 - alph) * (b - a)
                 f_lamb = func(lamb)
-            update_table_callback(k, round(a, 4), round(b, 4), round(lamb, 4), round(mu, 4), round(f_lamb, 4), round(f_mu, 4))
-            k += 1
-
-    elif (type == "max"):
-        k = 1
-        while (b - a > l):
-
-            f_lamb = func(lamb)
-            f_mu = func(mu)
+        elif (type == "max"):
             if (f_lamb < f_mu):
                 a = lamb
-                b = b
                 lamb = mu
+                f_lamb = f_mu
                 mu = a + alph * (b - a)
-
-            elif (f_lamb >= f_mu):
-                a = a
+                f_mu = func(mu)
+            else:
                 b = mu
                 mu = lamb
+                f_mu = f_lamb
                 lamb = a + (1 - alph) * (b - a)
-            update_table_callback(k, round(a, 4), round(b, 4), round(lamb, 4), round(mu, 4), round(f_lamb, 4), round(f_mu, 4))
-            k += 1
-            
+                f_lamb = func(lamb)
+
+    update_table_callback(k + 1, round(a, 4), round(b, 4), round(lamb, 4), round(mu, 4), round(f_lamb, 4), round(f_mu, 4))
+
     opt_x = (a + b) / 2
     opt_f = func(opt_x)
-
     func_eval = func.call_count - 1
-
     result_callback(opt_x, opt_f, a, b, func_eval)
 
 def generate_fibonacci(limit):
@@ -174,7 +150,7 @@ def fibonacci_search(f, a1, b1, l, epsilon, extremum_type,  update_table_callbac
     function_eval_count = 0
     f_lambda = func(lambda_val)
     f_mu = func(mu_val)
-    k = 1
+    k = 0
 
     # Основной этап: пока k <= n - 2
     while k <= n - 2:
@@ -226,4 +202,3 @@ def fibonacci_search(f, a1, b1, l, epsilon, extremum_type,  update_table_callbac
     update_table_callback(k, round(a_k, 4), round(b_k, 4), round(lambda_val, 4), round(mu_val, 4), round(func(lambda_val), 4), round(func(mu_val), 4))
 
     result_callback(x_opt, f_opt, a_k, b_k, function_eval_count)
-
